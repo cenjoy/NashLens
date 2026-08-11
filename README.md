@@ -16,11 +16,12 @@ consults no reference distribution, so it is invariant when the assumed opponent
 SHAP and Integrated Gradients cannot be, since their counterfactuals need an opponent-induced
 background or baseline.
 
-![Verbatim inspector output](figures/inspector_real_run.png)
+![The NashLens inspector (paper Fig. 1)](figures/nashlens_ui.png)
 
-*A real audit, verbatim: `python src/inspector.py --game kuhn_poker --infoset 1b`. Every panel above
-is computed, not mocked — including the per-head proxy check that marks the reward head
-**uncertain** and withholds the causal reading.*
+*The audit workflow, as drawn in the paper (Fig. 1): pick a scenario, read the student policy
+against its CFR teacher with the per-action logit decomposition, intervene on a factor and watch
+the policy move, then check the evidence — exact exploitability, factor-removal deltas, and per-head
+semantic diagnostics. A runnable command-line version of every panel is below.*
 
 **Scope, stated up front.** This is a workflow built from standard parts (CFR, policy distillation,
 additive heads), not a new algorithm, and not a new solver. It targets small enumerable or

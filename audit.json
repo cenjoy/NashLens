@@ -1,0 +1,72 @@
+{
+  "config": {
+    "game": "kuhn_poker",
+    "cfr_iters": 300,
+    "lambda": 0.1,
+    "distill_steps": 400,
+    "seed": 0,
+    "n_information_states": 12
+  },
+  "note": "Factor names are intended-and-tested, not guaranteed. Removal effects are exact properties of the policy logits; a head whose proxy check reports 'uncertain' must not be given a causal reading.",
+  "audits": [
+    {
+      "game": "kuhn_poker",
+      "infoset": "1b",
+      "player": 1,
+      "legal_actions": [
+        0,
+        1
+      ],
+      "action_probs": {
+        "0": 0.676278,
+        "1": 0.323722
+      },
+      "cfr_teacher_probs": {
+        "0": 0.658746,
+        "1": 0.341253
+      },
+      "l1_gap_vs_teacher": 0.035063,
+      "logit_decomposition": {
+        "0": {
+          "reward": 0.375297,
+          "opponent": -0.177216,
+          "intrinsic": -0.059618
+        },
+        "1": {
+          "reward": -0.324765,
+          "opponent": -0.207401,
+          "intrinsic": -0.06609
+        }
+      },
+      "factor_removal_l1": {
+        "reward": 0.334229,
+        "opponent": 0.013286,
+        "intrinsic": 0.002837
+      },
+      "exploitability": {
+        "student_nashconv": 0.007793,
+        "cfr_teacher_nashconv": 0.00303
+      },
+      "semantic_diagnostics": {
+        "reward": {
+          "proxy": "hand strength",
+          "pearson_r": -0.084,
+          "status": "uncertain"
+        },
+        "opponent": {
+          "proxy": "betting-history length",
+          "pearson_r": 0.497,
+          "status": "validated"
+        },
+        "intrinsic": {
+          "proxy": "state-independent by design",
+          "pearson_r": null,
+          "status": "n/a (constant)"
+        }
+      },
+      "dominant_head": "reward",
+      "causal_reading_licensed": false,
+      "verdict": "the reward-designated head dominates this decision; proxy check FAILED, so report which head carries the logit mass, NOT that reward structure caused the action"
+    }
+  ]
+}

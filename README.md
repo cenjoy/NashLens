@@ -1,7 +1,7 @@
 # NashLens
 
-Code, experiments, and results for **"NashLens: Game-Native Interpretable RL via CFR-Distilled
-Nash Anchoring"** (BESC 2026, Industry & Demo Track).
+**Game-Native Interpretable RL via CFR-Distilled Nash Anchoring** — code, experiments, and results
+for the BESC 2026 Industry Track paper.
 
 NashLens distils a counterfactual-regret-minimization (CFR) teacher into an **additive student**
 whose action logits decompose into *reward*, *opponent-history*, and *intrinsic* terms:
@@ -16,11 +16,33 @@ consults no reference distribution, so it is invariant when the assumed opponent
 SHAP and Integrated Gradients cannot be, since their counterfactuals need an opponent-induced
 background or baseline.
 
+![Verbatim inspector output](figures/inspector_real_run.png)
+
+*A real audit, verbatim: `python src/inspector.py --game kuhn_poker --infoset 1b`. Every panel above
+is computed, not mocked — including the per-head proxy check that marks the reward head
+**uncertain** and withholds the causal reading.*
+
 **Scope, stated up front.** This is a workflow built from standard parts (CFR, policy distillation,
 additive heads), not a new algorithm, and not a new solver. It targets small enumerable or
 well-abstracted imperfect-information games. Play strength is inherited from — and bounded by — the
 teacher. Factor *names* are intended-and-tested, never guaranteed; see
-[Semantics](#semantics-what-the-factor-names-do-and-dont-mean).
+[Semantics](#semantics-what-the-factor-names-do-and-dont-mean). The inspector is a **command-line
+tool** — there is no GUI and no hosted demo.
+
+## What the paper shows
+
+| Question | Answer, with the number |
+|---|---|
+| Does the audit head cost play strength? | No. Kuhn exploitability **0.0043±0.0014** vs. its CFR teacher's 0.003, and statistically indistinguishable from a single-head student on the same target. |
+| Does it cost latency? | No. **1,798 parameters** on Kuhn, 4,361 on Leduc — *fewer* than the single-head student it replaces — at **0.027 ms** per decision on CPU. |
+| Does it beat post-hoc explainers on the usual metrics? | **No, and we say so.** On XRL-Bench fidelity metrics the methods are comparable. |
+| Then what is the advantage? | Attribution needs no reference distribution, so it is **invariant under opponent shift** (cosine **1.000**) where Integrated Gradients drifts to a worst case of **0.577** — nearly orthogonal attributions for the same decision. |
+| Do the factor names mean what they say? | **Partly, and we tested rather than assumed.** The opponent head tracks betting history (*r*=0.44); the reward head does *not* track hand strength (*r*=**−0.67**). Names are intended-and-tested, never guaranteed. |
+| Does it scale? | Unproven. On 24,576-state `liars_dice` the student beats a non-Nash baseline (0.391 vs. 0.629) but sits well above the CFR reference (0.022). |
+
+Two findings here are negative and reported as such: the decomposition's faithfulness gain is not
+statistically significant (*p*=0.17), and pushing the orthogonality penalty — the obvious knob for
+"cleaner" factors — actively *hurts* semantic recovery (0.71 → 0.40). Both are in the paper.
 
 ## Install
 
@@ -146,6 +168,37 @@ a fixed seed are bit-identical. (An earlier revision seeded too late; the publis
 numbers were unaffected — they were re-run and match to the last digit — and the 10-seed Kuhn mean
 moved only from 0.0043±0.0014 to 0.0042±0.0012.)
 
+## Results
+
+**Equilibrium quality.** The additive student tracks its CFR teacher and stays far below a non-Nash
+baseline. Distillation converges in a few hundred steps.
+
+| | |
+|---|---|
+| ![Exact exploitability](figures/exploitability_compare.png) | ![Distillation convergence](figures/convergence.png) |
+| Exact best-response exploitability (NashConv, log scale, lower is better) across Kuhn and Leduc. | Distillation fit toward the CFR target over training steps. |
+
+**Attribution quality.** On the standard XRL-Bench fidelity metrics the three methods are broadly
+comparable — we do not claim a metric win. The advantage is that the decomposition is inline and
+directly inspectable, and invariant under opponent shift.
+
+| | |
+|---|---|
+| ![Explainer comparison on Kuhn](figures/explainer_compare.png) | ![Attribution faithfulness](figures/faithfulness_compare.png) |
+| KernelSHAP vs. gradient saliency vs. NashLens factor attribution on Kuhn. | Factor-level faithfulness. The additive head's edge over the single-head variant is **not** significant (*p*=0.17). |
+
+**Real environments and ablations.**
+
+![XRL-Bench real environments](figures/realenv_all_compare.png)
+
+*CartPole, LunarLander, FlappyBird — means with 95% CIs over 10 independently trained DQN seeds. The
+wide intervals reflect genuine seed-to-seed variance in DQN training, not measurement noise.*
+
+![Ablations](figures/ablation_result.png)
+
+*Nash-robustness score `100/(1+exploitability)`. Removing the Nash objective collapses play quality
+(99.6 → 70.6); removing the additive decomposition leaves it untouched (99.5).*
+
 ## Where each paper number comes from
 
 | Paper | Content | Source |
@@ -163,10 +216,10 @@ moved only from 0.0043±0.0014 to 0.0042±0.0012.)
 | Fig. 4 | XRL-Bench real-environment evaluation | `figures/realenv_all_compare.png` |
 | Sect. 5.1 | Parameter counts, per-decision latency | `results/inference_cost.json` |
 
-Two charts were produced but cut from the camera-ready for length; their numbers are reported in the
-body text instead, and the charts remain here: `figures/faithfulness_compare.png` (attribution
-faithfulness, 0.964±0.014 vs 0.948±0.015, *p*=0.17) and `figures/ablation_result.png` (Nash
-robustness 99.6 / 70.6 / 99.5).
+Two charts shown above under [Results](#results) were produced but cut from the camera-ready for
+length; their numbers are in the paper's body text instead —
+`figures/faithfulness_compare.png` (faithfulness 0.964±0.014 vs 0.948±0.015, *p*=0.17) and
+`figures/ablation_result.png` (Nash robustness 99.6 / 70.6 / 99.5).
 
 ## Semantics: what the factor names do and don't mean
 
@@ -225,7 +278,8 @@ experiments/
   opponent_shift_stability.py Table 8
   emit_xrl_table.py          Table 7 -> LaTeX
 results/                     JSON metric dumps behind every reported number
-figures/                     figures as they appear in the paper
+figures/                     result charts (PNG, embedded above) and the paper's
+                             inspector panel as vector PDF
 ```
 
 ## Citation

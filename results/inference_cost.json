@@ -1,0 +1,24 @@
+{
+  "repeats": 2000,
+  "device": "cpu",
+  "games": {
+    "kuhn_poker": {
+      "in_dim": 11,
+      "n_actions": 2,
+      "params_additive": 1798,
+      "params_single_head": 5058,
+      "ms_per_decision": 0.0264,
+      "ms_per_decision_with_3_interventions": 0.0466,
+      "params_additive_M": 0.0018
+    },
+    "leduc_poker": {
+      "in_dim": 30,
+      "n_actions": 3,
+      "params_additive": 4361,
+      "params_single_head": 6339,
+      "ms_per_decision": 0.0269,
+      "ms_per_decision_with_3_interventions": 0.0459,
+      "params_additive_M": 0.00436
+    }
+  }
+}

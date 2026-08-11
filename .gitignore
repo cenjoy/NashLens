@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# Build / OS
+*.aux
+*.log
+*.out
+.DS_Store
+
+# Large regenerated artifacts (keep the canonical results JSON, ignore scratch)
+results/realenv_xrlbench.json
+figures/*.tmp.png

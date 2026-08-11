@@ -1,0 +1,26 @@
+# Core numerics + deep learning (for the full poker/XRL-Bench experiments)
+numpy>=1.24
+torch>=2.0
+
+# Imperfect-information game solving and exact exploitability
+# OpenSpiel ships the `pyspiel` extension and python algorithms (CFR, NFSP,
+# Deep CFR, best_response, exploitability) used by poker_experiment.py.
+open_spiel>=1.4
+
+# Plotting (chart_generator.py)
+matplotlib>=3.7
+
+# KernelSHAP baseline (poker_experiment.py, realenv_multiseed.py)
+shap>=0.44
+
+# XRL-Bench control environments (experiments/realenv_multiseed.py).
+# LunarLander needs box2d; FlappyBird needs flappy_bird_gymnasium.
+# Environments whose extras are missing are skipped rather than failing.
+gymnasium[classic-control,box2d]>=0.29
+flappy_bird_gymnasium>=0.3
+
+# NOTE: the flagship reproducible artifact,
+# experiments/opponent_shift_stability.py, uses ONLY the Python standard
+# library and needs none of the packages above.
+#
+# The inspector (src/inspector.py) needs only numpy, torch, and open_spiel.
